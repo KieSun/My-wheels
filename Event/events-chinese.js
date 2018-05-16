@@ -63,10 +63,10 @@ try {
 if (hasDefineProperty) {
   Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
     enumerable: true,
-    get: function() {
+    get: function () {
       return defaultMaxListeners
     },
-    set: function(arg) {
+    set: function (arg) {
       // check whether the input is a positive number (whose value is zero or
       // greater and not a NaN).
       if (typeof arg !== 'number' || arg < 0 || arg !== arg)
@@ -269,12 +269,12 @@ function _addListener(target, type, listener, prepend) {
         existing.warned = true
         var w = new Error(
           'Possible EventEmitter memory leak detected. ' +
-            existing.length +
-            ' "' +
-            String(type) +
-            '" listeners ' +
-            'added. Use emitter.setMaxListeners() to ' +
-            'increase limit.'
+          existing.length +
+          ' "' +
+          String(type) +
+          '" listeners ' +
+          'added. Use emitter.setMaxListeners() to ' +
+          'increase limit.'
         )
         w.name = 'MaxListenersExceededWarning'
         w.emitter = target
@@ -366,7 +366,7 @@ EventEmitter.prototype.prependOnceListener = function prependOnceListener(
 }
 
 // Emits a 'removeListener' event if and only if the listener was removed.
-// 删除监听者会发送 removeListener 事件
+// 如果用户监听了这个事件，删除监听者会发送 removeListener 事件
 EventEmitter.prototype.removeListener = function removeListener(
   type,
   listener
@@ -495,7 +495,7 @@ EventEmitter.prototype.rawListeners = function rawListeners(type) {
   return _listeners(this, type, false)
 }
 
-EventEmitter.listenerCount = function(emitter, type) {
+EventEmitter.listenerCount = function (emitter, type) {
   if (typeof emitter.listenerCount === 'function') {
     return emitter.listenerCount(type)
   } else {
@@ -547,7 +547,7 @@ function unwrapListeners(arr) {
 }
 
 function objectCreatePolyfill(proto) {
-  var F = function() {}
+  var F = function () { }
   F.prototype = proto
   return new F()
 }
@@ -561,7 +561,7 @@ function objectKeysPolyfill(obj) {
 }
 function functionBindPolyfill(context) {
   var fn = this
-  return function() {
+  return function () {
     return fn.apply(context, arguments)
   }
 }
