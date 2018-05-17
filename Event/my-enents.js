@@ -23,6 +23,8 @@ class EventEmitter {
     if (events.has('newListener') && type !== 'newListener') {
       this.emit('newListener', type, fn)
     }
+
+    return fn
   }
   emit(type, ...arg) {
     if (type === 'error') {
@@ -72,24 +74,45 @@ class EventEmitter {
     if (!handle) return false
     let isFn = typeof handle === 'function'
     if (isFn) {
-      delete events.get(type)
+      events.delete(type)
     } else {
-      handle.forEach((v, index) => {
-        if (v === fn) handle.splice(index, 1)
-        break
-      });
+      for (let i = 0; i < handle.length; i++) {
+        let v = handle[i]
+        if (v === fn) {
+          handle.splice(i, 1)
+          break
+        }
+      }
     }
     if (events.has('removeListener')) {
       this.emit('removeListener', type, fn)
+    }
+    console.log(events)
+    return true
+  }
+
+  removeAllListener() {
+    let events = this._events
+    let keys = events.keys()
+    if (!keys) return false
+
+    let next = keys.next().value
+    while (next) {
+      events.delete(next)
+      next = keys.next().value
     }
     return true
   }
 }
 
 let b = new EventEmitter()
-b.addListener('newListener', function() {
-  console.log(arguments)
+let fn2 = b.addListener('newListener', function() {
+  // console.log(arguments)
 })
-b.addListener('type', () => {
+let fn = b.addListener('type', function() {})
+let fn1 = b.addListener('type', function() {})
+let fn3 = b.addListener('type', () => {
   console.log('object')
 })
+console.log(fn3)
+console.log(b.removeAllListener(), 'remove action')
