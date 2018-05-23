@@ -51,7 +51,7 @@ class EventEmitter {
         handle.call(this, ...arg)
       } else {
         handle.forEach(v => {
-          handle.call(this, ...arg)
+          v.call(this, ...arg)
         })
       }
     } else {
@@ -59,7 +59,7 @@ class EventEmitter {
         handle.apply(this, arg)
       } else {
         handle.forEach(v => {
-          handle.apply(this, arg)
+          v.apply(this, arg)
         })
       }
     }
@@ -106,13 +106,13 @@ class EventEmitter {
 }
 
 let b = new EventEmitter()
-let fn2 = b.addListener('newListener', function() {
-  // console.log(arguments)
+let fn = b.addListener('type', function(v) {
+  console.log('type2-----', v)
 })
-let fn = b.addListener('type', function() {})
-let fn1 = b.addListener('type', function() {})
-let fn3 = b.addListener('type', () => {
-  console.log('object')
+let fn1 = b.addListener('type', function(v) {
+  console.log('type1----', v)
 })
-console.log(fn3)
-console.log(b.removeAllListener(), 'remove action')
+let fn3 = b.addListener('type', v => {
+  console.log('object------', v)
+})
+b.emit('type', 'v222')
