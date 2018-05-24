@@ -1,4 +1,4 @@
-import Queue from '../queue/queue'
+// import Queue from '../queue/queue'
 
 class Node {
   constructor(value) {
@@ -75,4 +75,32 @@ class BST {
       if (n.right) q.enQueue(n.right)
     }
   }
+  remove(v) {
+    if (!this.root) return
+  }
+  _remove(node, v) {
+    if (node.value > v) {
+    }
+  }
+  getMin() {
+    return this._getMin(this.root).value
+  }
+  _getMin(node) {
+    if (!node.left) return node
+    return this._getMin(node.left)
+  }
+  getMax() {
+    return this._getMax(this.root).value
+  }
+  _getMax(node) {
+    if (!node.right) return node
+    return this._getMin(node.right)
+  }
 }
+
+let t = new BST()
+t.addNode(1)
+t.addNode(11)
+t.addNode(10)
+console.log(t.getMax())
+console.log(t.getMin())
