@@ -1,4 +1,4 @@
-class Queue {
+export default class Queue {
   constructor() {
     this.queue = []
   }
@@ -6,7 +6,7 @@ class Queue {
     this.queue.push(item)
   }
   deQueue() {
-    this.queue.shift()
+    return this.queue.shift()
   }
   getHeader() {
     return this.queue[0]

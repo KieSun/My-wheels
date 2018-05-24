@@ -33,6 +33,7 @@ class SqQueue {
     if (this.size === this.getLength() / 4 && this.getLength() / 2 !== 0) {
       this.resize(this.getLength() / 2)
     }
+    return r
   }
   getHeader() {
     if (this.isEmpty()) {
