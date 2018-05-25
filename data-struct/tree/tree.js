@@ -5,19 +5,19 @@ class Node {
     this.value = value
     this.left = null
     this.right = null
+    this.size = 1
   }
 }
 
 class BST {
   constructor() {
     this.root = null
-    this.size = 0
   }
   getSize() {
-    return this.size
+    return this.root ? this.root.size : 0
   }
   isEmpty() {
-    return this.size === 0
+    return this.root != null
   }
   addNode(v) {
     this.root = this._addChild(this.root, v)
@@ -26,18 +26,19 @@ class BST {
   // 节点值的大小
   _addChild(node, v) {
     if (!node) {
-      this.size++
       return new Node(v)
     }
     if (node.value > v) {
+      node.size++
       node.left = this._addChild(node.left, v)
     } else if (node.value < v) {
+      node.size++
       node.right = this._addChild(node.right, v)
     }
     return node
   }
   // 先序遍历可用于打印树的结构
-  // 先序遍历表示先访问根节点，然后访问左节点，最后访问右节点。
+  // 先序遍历先访问根节点，然后访问左节点，最后访问右节点。
   preTraversal() {
     this._pre(this.root)
   }
@@ -113,7 +114,6 @@ class BST {
     return this._getMin(node.right)
   }
   floor(v) {
-    if (!this.root) return null
     let node = this._floor(this.root, v)
     return node ? node.value : null
   }
@@ -130,7 +130,6 @@ class BST {
     return node
   }
   ceil(v) {
-    if (!this.root) return null
     let node = this._ceil(this.root, v)
     return node ? node.value : null
   }
@@ -146,10 +145,25 @@ class BST {
     if (left) return left
     return node
   }
+  select(k) {
+    let node = this._select(this.root, k)
+    return node ? node.value : null
+  }
+  _select(node, k) {
+    if (!node) return null
+    // 先获取左子树下有几个节点
+    // 判断 size 是否大于 k
+    // 如果大于 k，代表所需要的节点在左节点
+    if (size > k) return this._select(node.left, k)
+    // 如果小于 k，代表所需要的节点在右节点
+    // 注意这里需要重新计算 k，减去根节点除了右子树的节点数量
+    if (size < k) return this._select(node.right, k - size - 1)
+    return node
+  }
 }
 
 let t = new BST()
 t.addNode(1)
 t.addNode(11)
 t.addNode(10)
-console.log(t.ceil(9))
+console.log(t.select(2))
