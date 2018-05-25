@@ -1,3 +1,5 @@
+// import diff from './diff'
+
 class Element {
   /**
    * @param {string} tag 'div'
@@ -45,9 +47,19 @@ class Element {
   }
 }
 
-let span = new Element('span', { src: 'my-span' }, ['span'])
-let div = new Element('p', { class: 'my-p1' }, ['div', span])
-let div1 = new Element('p', { class: 'my-p2' }, ['div1'])
-let root = new Element('div', { class: 'my-div' }, [div, div1])
+let root = new Element('div', { class: 'my-div' }, ['root'])
+
+let root1 = new Element('div', { class: 'my-div' }, ['root1'])
 
 root.render()
+
+let d = diff(root, root1)
+console.log(d)
+let keys = d.keys()
+
+keys.forEach(v => {
+  let a = keys[v]
+  if (a[0].type === StateEnums.ChangeText) {
+    root.textContent = a[0].node
+  }
+})
