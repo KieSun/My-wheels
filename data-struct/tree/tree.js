@@ -96,11 +96,40 @@ class BST {
     if (!node.right) return node
     return this._getMin(node.right)
   }
+  floor(v) {
+    if (!this.root) return null
+    let node = this._floor(this.root, v)
+    return node ? node.value : null
+  }
+  _floor(node, v) {
+    if (!node) return null
+    if (node.value === v) return v
+    if (node.value > v) {
+      return this._floor(node.left, v)
+    }
+    let right = this._floor(node.right, v)
+    if (right) return right
+    return node
+  }
+  ceil(v) {
+    if (!this.root) return null
+    let node = this._ceil(this.root, v)
+    return node ? node.value : null
+  }
+  _ceil(node, v) {
+    if (!node) return null
+    if (node.value === v) return v
+    if (node.value < v) {
+      return this._ceil(node.right, v)
+    }
+    let left = this._ceil(node.left, v)
+    if (left) return left
+    return node
+  }
 }
 
 let t = new BST()
 t.addNode(1)
 t.addNode(11)
 t.addNode(10)
-console.log(t.getMax())
-console.log(t.getMin())
+console.log(t.ceil(9))
