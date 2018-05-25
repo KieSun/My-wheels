@@ -22,6 +22,8 @@ class BST {
   addNode(v) {
     this.root = this._addChild(this.root, v)
   }
+  // 添加节点时，需要比较添加的节点值和当前
+  // 节点值的大小
   _addChild(node, v) {
     if (!node) {
       this.size++
@@ -34,6 +36,8 @@ class BST {
     }
     return node
   }
+  // 先序遍历可用于打印树的结构
+  // 先序遍历表示先访问根节点，然后访问左节点，最后访问右节点。
   preTraversal() {
     this._pre(this.root)
   }
@@ -44,6 +48,10 @@ class BST {
       this._pre(node.right)
     }
   }
+  // 中序遍历可用于排序
+  // 对于 BST 来说，中序遍历可以实现一次遍历就
+  // 得到有序的值
+  // 中序遍历表示先访问左节点，然后访问根节点，最后访问右节点。
   midTraversal() {
     this._mid(this.root)
   }
@@ -54,6 +62,9 @@ class BST {
       this._mid(node.right)
     }
   }
+  // 后序遍历可用于先操作子节点
+  // 再操作父节点的场景
+  // 后序遍历表示先访问左节点，然后访问右节点，最后访问根节点。
   backTraversal() {
     this._back(this.root)
   }
@@ -67,8 +78,13 @@ class BST {
   breadthTraversal() {
     if (!this.root) return null
     let q = new Queue()
+    // 将根节点入队
     q.enQueue(this.root)
+    // 循环判断队列是否为空，为空
+    // 代表树遍历完毕
     while (!q.isEmpty()) {
+      // 将队首出队，判断是否有左右子树
+      // 有的话，就先左后右入队
       let n = q.deQueue()
       console.log(n.value)
       if (n.left) q.enQueue(n.left)
@@ -104,9 +120,11 @@ class BST {
   _floor(node, v) {
     if (!node) return null
     if (node.value === v) return v
+    // 如果当前节点值还比需要的值大，就继续递归
     if (node.value > v) {
       return this._floor(node.left, v)
     }
+    // 判断当前节点是否拥有右子树
     let right = this._floor(node.right, v)
     if (right) return right
     return node
@@ -119,9 +137,11 @@ class BST {
   _ceil(node, v) {
     if (!node) return null
     if (node.value === v) return v
+    // 如果当前节点值还比需要的值小，就继续递归
     if (node.value < v) {
       return this._ceil(node.right, v)
     }
+    // 判断当前节点是否拥有左子树
     let left = this._ceil(node.left, v)
     if (left) return left
     return node
