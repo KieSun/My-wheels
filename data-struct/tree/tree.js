@@ -13,8 +13,8 @@ class BST {
   constructor() {
     this.root = null
   }
-  getSize() {
-    return this.root ? this.root.size : 0
+  _getSize(node) {
+    return node ? node.size : 0
   }
   isEmpty() {
     return this.root != null
@@ -92,13 +92,6 @@ class BST {
       if (n.right) q.enQueue(n.right)
     }
   }
-  remove(v) {
-    if (!this.root) return
-  }
-  _remove(node, v) {
-    if (node.value > v) {
-    }
-  }
   getMin() {
     return this._getMin(this.root).value
   }
@@ -152,6 +145,7 @@ class BST {
   _select(node, k) {
     if (!node) return null
     // 先获取左子树下有几个节点
+    let size = this._getSize(node.left)
     // 判断 size 是否大于 k
     // 如果大于 k，代表所需要的节点在左节点
     if (size > k) return this._select(node.left, k)
@@ -160,10 +154,38 @@ class BST {
     if (size < k) return this._select(node.right, k - size - 1)
     return node
   }
+  delectMin() {
+    this.root = this._delectMin(this.root)
+    console.log(this.root)
+  }
+  _delectMin(node) {
+    // 一直递归左子树
+    // 如果左子树为空，就判断节点是否拥有右子树
+    // 有右子树的话就把需要删除的节点替换为右子树
+    if ((node != null) & !node.left) return node.right
+    node.left = this._delectMin(node.left)
+    // 最后需要重新维护下节点的 `size`
+    node.size = this._getSize(node.left) + this._getSize(node.right) + 1
+    return node
+  }
+  delectMax() {
+    this.root = this._delectMax(this.root)
+    console.log(this.root)
+  }
+  _delectMax(node) {
+    // 一直递归右子树
+    // 如果右子树为空，就判断节点是否拥有左子树
+    // 有左子树的话就把需要删除的节点替换为左子树
+    if ((node != null) & !node.right) return node.left
+    node.right = this._delectMax(node.right)
+    // 最后需要重新维护下节点的 `size`
+    node.size = this._getSize(node.left) + this._getSize(node.right) + 1
+    return node
+  }
 }
 
 let t = new BST()
 t.addNode(1)
 t.addNode(11)
 t.addNode(10)
-console.log(t.select(2))
+t.delectMax()
