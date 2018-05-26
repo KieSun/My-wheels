@@ -182,10 +182,44 @@ class BST {
     node.size = this._getSize(node.left) + this._getSize(node.right) + 1
     return node
   }
+  delect(v) {
+    this.root = this._delect(this.root, v)
+  }
+  _delect(node, v) {
+    if (!node) return null
+    // 寻找的节点比当前节点小，去左子树找
+    if (node.value < v) {
+      node.right = this._delect(node.right, v)
+    } else if (node.value > v) {
+      // 寻找的节点比当前节点大，去右子树找
+      node.left = this._delect(node.left, v)
+    } else {
+      // 进入这个条件说明已经找到节点
+      // 先判断节点是否拥有拥有左右子树中的一个
+      // 是的话，将子树返回出去，这里和 `_delectMin` 的操作一样
+      if (!node.left) return node.right
+      if (!node.right) return node.left
+      // 进入这里，代表节点拥有左右子树
+      // 先取出当前节点的后继结点，也就是取当前节点右子树的最小值
+      let min = this._getMin(node.right)
+      // 取出最小值后，删除最小值
+      // 然后把删除节点后的子树赋值给最小值节点
+      min.right = this._delectMin(node.right)
+      // 左子树不动
+      min.left = node.left
+      node = min
+    }
+    // 维护 size
+    node.size = this._getSize(node.left) + this._getSize(node.right) + 1
+    return node
+  }
 }
 
 let t = new BST()
-t.addNode(1)
+t.addNode(7)
 t.addNode(11)
 t.addNode(10)
-t.delectMax()
+t.addNode(4)
+t.addNode(1)
+t.addNode(18)
+t.delect(11)
