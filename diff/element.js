@@ -2,14 +2,20 @@
 
 class Element {
   /**
-   * @param {string} tag 'div'
-   * @param {object} props { class: 'item' }
+   * @param {String} tag 'div'
+   * @param {Object} props { class: 'item' }
    * @param {Array} children [ Element1, 'text']
+   * @param {String} key option
    */
-  constructor(tag, props, children) {
+  constructor(tag, props, children, key) {
     this.tag = tag
     this.props = props
-    this.children = children
+    if (Array.isArray(children)) {
+      this.children = children
+    } else {
+      this.children = null
+      this.key = children
+    }
   }
   // 渲染
   render() {
@@ -52,14 +58,3 @@ let root = new Element('div', { class: 'my-div' }, ['root'])
 let root1 = new Element('div', { class: 'my-div' }, ['root1'])
 
 root.render()
-
-let d = diff(root, root1)
-console.log(d)
-let keys = d.keys()
-
-keys.forEach(v => {
-  let a = keys[v]
-  if (a[0].type === StateEnums.ChangeText) {
-    root.textContent = a[0].node
-  }
-})

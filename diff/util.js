@@ -1,5 +1,6 @@
 let StateEnums = {
-  ChangeText: 0
+  ChangeText: 0,
+  ChangeProps: 1
 }
 
 function isString(str) {
