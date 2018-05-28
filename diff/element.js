@@ -12,7 +12,7 @@ class Element {
     this.props = props
     if (Array.isArray(children)) {
       this.children = children
-    } else {
+    } else if (!children && key) {
       this.children = null
       this.key = children
     }
