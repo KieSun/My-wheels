@@ -1,8 +1,8 @@
-// function diff(oldDomTree, newDomTree) {
-//   let pathchs = {}
-//   dfs(oldDomTree, newDomTree, 0, pathchs)
-//   return pathchs
-// }
+function diff(oldDomTree, newDomTree) {
+  let pathchs = {}
+  dfs(oldDomTree, newDomTree, 0, pathchs)
+  return pathchs
+}
 
 function dfs(oldNode, newNode, index, patches) {
   // 1. tagName and key is not same, replace oldNode
@@ -11,26 +11,44 @@ function dfs(oldNode, newNode, index, patches) {
   // 4. node is same and has children, list diff children
   // 5. newNode is null, nothing to do
   let curPatches = []
-  if (isString(oldNode) && isString(newNode) && oldNode !== newNode) {
-    curPatches.push({ type: StateEnums.ChangeText, node: newNode })
-  } else if (newNode.tag === oldNode.tag && newNode.key === oldNode.key) {
-    let props = diffProps(oldNode, newNode)
-    if (r) {
-      curPatches.push({ type: StateEnums.ChangeProps, props })
-    }
-    let changes = listDiff(oldNode.children, newNode.children)
+  if (newNode.tag === oldNode.tag && newNode.key === oldNode.key) {
+    let props = diffProps(oldNode.props, newNode.props)
+    if (props.length) curPatches.push({ type: StateEnums.ChangeProps, props })
+    diffChildren(oldNode.children, newNode.children, index, patches)
   } else if (!newNode) {
   } else {
     curPatches.push({ type: StateEnums.Replace, node: newNode })
   }
 
-  if (curPatches.length) patches[index] = curPatches
+  if (curPatches.length) {
+    if (patches[index]) {
+      patches[index] = patches[index].concat(curPatches)
+    } else {
+      patches[index] = curPatches
+    }
+  }
 }
 
 function diffChildren(oldChild, newChild, index, patches) {
-  oldChild.forEach((e, index) => {
-    dfs(e, newChild[index], index, patches)
-  })
+  let changes = listDiff(oldChild, newChild, index, patches)
+  if (changes.length) {
+    if (patches[index]) {
+      console.log(index)
+      patches[index] = patches[index].concat(changes)
+    } else {
+      patches[index] = changes
+    }
+  }
+  let last = null
+  oldChild &&
+    oldChild.forEach((item, i) => {
+      let child = last && last.children
+      if (child) {
+        index = index + child.length + 1
+        dfs(item, newChild[i], index, patches)
+      } else index += 1
+      last = item
+    })
 }
 
 function diffProps(oldProps, newProps) {
@@ -56,7 +74,7 @@ function diffProps(oldProps, newProps) {
           prop: key,
           value: newProps[key]
         })
-      } else {
+      } else if (!oldProps[key]) {
         change.push({
           type: StateEnums.AddProps,
           prop: key,
@@ -68,10 +86,12 @@ function diffProps(oldProps, newProps) {
   return change
 }
 
-function listDiff(oldList, newList) {
-  let oldKeys = getKeys(oldList).keys
-  let newKeys = getKeys(newList).keys
-  console.log(newKeys)
+function listDiff(oldList, newList, index, patches) {
+  let { keys: oldKeys, text: oldText } = getKeys(oldList)
+  let { keys: newKeys, text: newText, noTextList } = getKeys(newList)
+  if (isString(oldText) && isString(newText) && oldText !== newText) {
+    patches[index] = [{ type: StateEnums.ChangeText, text: newText }]
+  }
   let changes = []
   let node = null
   // 用于减少不必要的移动
@@ -91,7 +111,7 @@ function listDiff(oldList, newList) {
     if (index === -1) {
       changes.push({
         type: StateEnums.Insert,
-        node: key,
+        node: noTextList[newKeys.indexOf(key)],
         after: node
       })
     } else {
@@ -99,7 +119,7 @@ function listDiff(oldList, newList) {
       if (index < lastIndex) {
         changes.push({
           type: StateEnums.Move,
-          node: key,
+          node: noTextList[newKeys.indexOf(key)],
           after: node
         })
       }
@@ -115,7 +135,7 @@ function listDiff(oldList, newList) {
     if (index === -1) {
       changes.push({
         type: StateEnums.Remove,
-        node: key
+        key
       })
     }
   })
@@ -125,27 +145,32 @@ function listDiff(oldList, newList) {
 
 function getKeys(list) {
   let keys = []
-  let text = []
-  for (let i = 0; i < list.length; i++) {
+  let noTextList = []
+  let text = ''
+  let length = list && list.length
+  for (let i = 0; i < length; i++) {
     let item = list[i]
     if (item instanceof Element) {
       keys.push(item.key)
+      noTextList.push(item)
     } else {
-      text.push(item)
+      text += item
     }
   }
-  return { keys, text }
+  return { keys, text, noTextList }
 }
 
-let test1 = new Element('div', { class: 'my-div' }, 'test1')
-
-let test2 = new Element('div', { class: 'my-div' }, 'test2')
 let test3 = new Element('div', { class: 'my-div' }, 'test3')
+let test4 = new Element('div', { class: 'my-div' }, 'test4')
+let test5 = new Element('div', { class: 'my-div' }, 'test5')
+let test1 = new Element('div', { class: 'my-div' }, ['test1', test3])
 
-let a1 = [test1, test2, '1111']
-let a2 = [test1, test3, '11112']
-// console.log(listDiff(a1, a2))
+let test2 = new Element('div', { class: 'my-div' }, [
+  'test2',
+  test4,
+  test5,
+  test3
+])
 
-console.log(diffProps({ class: 'my-div' }, { class: 'my-di', id: 111 }))
-
+console.log(diff(test1, test2))
 // export default diff
