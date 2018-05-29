@@ -10,13 +10,13 @@ class Element {
   constructor(tag, props, children, key) {
     this.tag = tag
     this.props = props
-
     if (Array.isArray(children)) {
       this.children = children
     } else if (isString(children)) {
       this.key = children
       this.children = null
     }
+    if (key) this.key = key
   }
   // 渲染
   render() {

@@ -30,24 +30,27 @@ function dfs(oldNode, newNode, index, patches) {
 }
 
 function diffChildren(oldChild, newChild, index, patches) {
-  let changes = listDiff(oldChild, newChild, index, patches)
+  let { changes, map } = listDiff(oldChild, newChild, index, patches)
   if (changes.length) {
     if (patches[index]) {
-      console.log(index)
       patches[index] = patches[index].concat(changes)
     } else {
       patches[index] = changes
     }
   }
-  let last = null
   oldChild &&
     oldChild.forEach((item, i) => {
-      let child = last && last.children
+      let child = item && item.children
       if (child) {
         index = index + child.length + 1
-        dfs(item, newChild[i], index, patches)
+        let keyIndex = map[item.key]
+        dfs(
+          item,
+          newChild[keyIndex === -1 || undefined ? i : keyIndex],
+          index,
+          patches
+        )
       } else index += 1
-      last = item
     })
 }
 
@@ -87,12 +90,17 @@ function diffProps(oldProps, newProps) {
 }
 
 function listDiff(oldList, newList, index, patches) {
-  let { keys: oldKeys, text: oldText } = getKeys(oldList)
-  let { keys: newKeys, text: newText, noTextList } = getKeys(newList)
+  let { keys: oldKeys, text: oldText, noTextList: oldNoTextList } = getKeys(
+    oldList
+  )
+  let { keys: newKeys, text: newText, noTextList: newNoTextList } = getKeys(
+    newList
+  )
   if (isString(oldText) && isString(newText) && oldText !== newText) {
     patches[index] = [{ type: StateEnums.ChangeText, text: newText }]
   }
   let changes = []
+  let map = {}
   let node = null
   // 用于减少不必要的移动
   // 可以考虑以下情况
@@ -103,26 +111,29 @@ function listDiff(oldList, newList, index, patches) {
   // 如果只是单纯的去判断元素在新旧中的位置是否相同
   // 而决定是否移动的话，其实是不必要的
   let lastIndex = 0
-
   newKeys.forEach(key => {
+    if (!key) return
     // 寻找旧的 children 中是否含有当前节点
     let index = oldKeys.indexOf(key)
     // 没找到代表新节点，需要插入
     if (index === -1) {
+      console.log(newNoTextList)
       changes.push({
         type: StateEnums.Insert,
-        node: noTextList[newKeys.indexOf(key)],
+        node: newNoTextList[newKeys.indexOf(key)],
         after: node
       })
     } else {
       // 找到了，需要判断是否需要移动
+      let index = newKeys.indexOf(key)
       if (index < lastIndex) {
         changes.push({
           type: StateEnums.Move,
-          node: noTextList[newKeys.indexOf(key)],
+          node: newNoTextList[newKeys.indexOf(key)],
           after: node
         })
       }
+      map[key] = index
       lastIndex = Math.max(lastIndex, index)
     }
     node = key
@@ -139,8 +150,7 @@ function listDiff(oldList, newList, index, patches) {
       })
     }
   })
-
-  return changes
+  return { changes, map }
 }
 
 function getKeys(list) {
@@ -150,26 +160,42 @@ function getKeys(list) {
   let length = list && list.length
   for (let i = 0; i < length; i++) {
     let item = list[i]
-    if (item instanceof Element) {
-      keys.push(item.key)
-      noTextList.push(item)
-    } else {
+    let key
+    if (isString(item)) {
       text += item
+      key = null
+    } else if (item instanceof Element) {
+      key = item.key
     }
+    keys.push(key)
+    noTextList.push(item)
   }
   return { keys, text, noTextList }
 }
 
-let test3 = new Element('div', { class: 'my-div' }, 'test3')
+let test6 = new Element('div', { class: 'my-div' }, 'test6')
+let test7 = new Element('div', { class: 'my-div' }, [test6], 'test7')
+let test77 = new Element('div', { class: 'my-div' }, 'test7')
+let test8 = new Element('div', { class: 'my-div' }, 'test8')
+
+let test3 = new Element('div', { class: 'my-div' }, [test6, test7], 'test3')
+let test33 = new Element(
+  'div',
+  { class: 'my-div' },
+  [test77, 'text', test8],
+  'test3'
+)
+
 let test4 = new Element('div', { class: 'my-div' }, 'test4')
 let test5 = new Element('div', { class: 'my-div' }, 'test5')
+
 let test1 = new Element('div', { class: 'my-div' }, ['test1', test3])
 
 let test2 = new Element('div', { class: 'my-div' }, [
   'test2',
   test4,
   test5,
-  test3
+  test33
 ])
 
 console.log(diff(test1, test2))
