@@ -43,13 +43,12 @@ function diffChildren(oldChild, newChild, index, patches) {
       let child = item && item.children
       if (child) {
         index = index + child.length + 1
-        let keyIndex = map[item.key]
-        dfs(
-          item,
-          newChild[keyIndex === -1 || undefined ? i : keyIndex],
-          index,
-          patches
-        )
+
+        let keyIndex = Object.keys(map).length ? map[item.key] : -1
+        let node = keyIndex === -1 ? newChild[i] : newChild[keyIndex]
+        if (node) {
+          dfs(item, node, index, patches)
+        }
       } else index += 1
     })
 }
@@ -117,7 +116,6 @@ function listDiff(oldList, newList, index, patches) {
     let index = oldKeys.indexOf(key)
     // 没找到代表新节点，需要插入
     if (index === -1) {
-      console.log(newNoTextList)
       changes.push({
         type: StateEnums.Insert,
         node: newNoTextList[newKeys.indexOf(key)],
