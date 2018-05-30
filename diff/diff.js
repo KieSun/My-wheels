@@ -38,18 +38,20 @@ function diffChildren(oldChild, newChild, index, patches) {
       patches[index] = changes
     }
   }
+  let last = null
   oldChild &&
     oldChild.forEach((item, i) => {
       let child = item && item.children
       if (child) {
-        index = index + child.length + 1
-
+        index =
+          last && last.children ? index + last.children.length + 1 : index + 1
         let keyIndex = Object.keys(map).length ? map[item.key] : -1
-        let node = keyIndex === -1 ? newChild[i] : newChild[keyIndex]
+        let node = newChild[keyIndex]
         if (node) {
           dfs(item, node, index, patches)
         }
       } else index += 1
+      last = item
     })
 }
 
@@ -86,91 +88,83 @@ function diffProps(oldProps, newProps) {
 }
 
 function listDiff(oldList, newList, index, patches) {
-  let { keys: oldKeys, text: oldText, noTextList: oldNoTextList } = getKeys(
-    oldList
-  )
-  let { keys: newKeys, text: newText, noTextList: newNoTextList } = getKeys(
-    newList
-  )
-  if (isString(oldText) && isString(newText) && oldText !== newText) {
-    patches[index] = [{ type: StateEnums.ChangeText, text: newText }]
-  }
+  let oldKeys = getKeys(oldList)
+  let newKeys = getKeys(newList)
   let changes = []
   let map = {}
   let node = null
-  // 用于减少不必要的移动
-  // 可以考虑以下情况
-  // oldKeys: 1, 2, 3, 4
-  // newkeys: 5, 1, 2, 3, 4
-  // 对于以上情况，5 插入到首位以后，后面的元素相对于
-  // newkeys 中的位置是不变的，所以不需要移动
-  // 如果只是单纯的去判断元素在新旧中的位置是否相同
-  // 而决定是否移动的话，其实是不必要的
-  let lastIndex = 0
-  newKeys.forEach(key => {
-    if (!key) return
-    // 寻找旧的 children 中是否含有当前节点
-    let index = oldKeys.indexOf(key)
-    // 没找到代表新节点，需要插入
-    if (index === -1) {
-      changes.push({
-        type: StateEnums.Insert,
-        node: newNoTextList[newKeys.indexOf(key)],
-        after: node
-      })
-    } else {
-      // 找到了，需要判断是否需要移动
+
+  oldList &&
+    oldList.forEach((item, i) => {
+      let key = item.key
+      if (isString(item)) {
+        key = item
+      }
+      // 寻找新的 children 中是否含有当前节点
+      // 没有的话需要删除
       let index = newKeys.indexOf(key)
-      if (index < lastIndex) {
+      if (index === -1) {
         changes.push({
-          type: StateEnums.Move,
-          node: newNoTextList[newKeys.indexOf(key)],
-          after: node
+          type: StateEnums.Remove,
+          node: item,
+          index: i
         })
       }
-      map[key] = index
-      lastIndex = Math.max(lastIndex, index)
-    }
-    node = key
-  })
+    })
+  newList &&
+    newList.forEach((item, i) => {
+      let key = item.key
+      if (isString(item)) {
+        key = item
+      }
+      // 寻找旧的 children 中是否含有当前节点
+      let index = oldKeys.indexOf(key)
+      // 没找到代表新节点，需要插入
+      if (index === -1) {
+        changes.push({
+          type: StateEnums.Insert,
+          node: item,
+          index: i
+        })
+      } else {
+        // 找到了，需要判断是否需要移动
+        let index = newKeys.indexOf(key)
+        if (index !== i) {
+          changes.push({
+            type: StateEnums.Move,
+            from: index,
+            to: i
+          })
+        }
+        map[key] = index
+      }
+      node = key
+    })
 
-  oldKeys.forEach(key => {
-    // 寻找新的 children 中是否含有当前节点
-    // 没有的话需要删除
-    let index = newKeys.indexOf(key)
-    if (index === -1) {
-      changes.push({
-        type: StateEnums.Remove,
-        node: oldNoTextList[oldKeys.indexOf(key)]
-      })
-    }
-  })
   return { changes, map }
 }
 
 function getKeys(list) {
   let keys = []
-  let noTextList = []
-  let text = ''
-  let length = list && list.length
-  for (let i = 0; i < length; i++) {
-    let item = list[i]
-    let key
-    if (isString(item)) {
-      text += item
-      key = null
-    } else if (item instanceof Element) {
-      key = item.key
-    }
-    keys.push(key)
-    noTextList.push(item)
-  }
-  return { keys, text, noTextList }
+  let text
+  list &&
+    list.forEach(item => {
+      let key
+      if (isString(item)) {
+        key = [item]
+      } else if (item instanceof Element) {
+        key = item.key
+      }
+      keys.push(key)
+    })
+  return keys
 }
 
 let test6 = new Element('div', { class: 'my-div' }, ['test6'], 'test6')
+
 let test7 = new Element('div', { class: 'my-div' }, [test6, 'test7'], 'test7')
-let test77 = new Element('div', { class: 'my-div' }, ['test7'], 'test7')
+let test77 = new Element('div', { class: 'my-div' }, ['test77'], 'test7')
+
 let test8 = new Element('div', { class: 'my-div' }, ['test8'], 'test8')
 
 let test3 = new Element(
@@ -198,15 +192,21 @@ let root = test1.render()
 
 function patch(node, oldTree, index, patchs) {
   let changes = patchs[index]
+
   let childNodes = node && node.childNodes
   let oldTreeChild = oldTree && oldTree.children
+
+  let last = null
   childNodes &&
     childNodes.forEach((item, i) => {
       let child = item && item.childNodes
+      console.log(index)
       if (child) {
-        index = index + 1 + child.length
+        index =
+          last && last.children ? index + last.children.length + 1 : index + 1
         patch(item, oldTreeChild[i], index, patchs)
       } else index++
+      last = item
     })
   if (changes && changes.length) changeDom(node, oldTreeChild, changes)
 }
@@ -238,34 +238,20 @@ function changeDom(node, tree, changes) {
           })
           break
         case StateEnums.Remove:
-          tree &&
-            tree.forEach((item, i) => {
-              if (change.node === item) {
-                node.children[i].remove()
-              }
-            })
+          console.log(change, 111)
           break
         case StateEnums.Insert:
-          console.log(tree)
-          if (change.after == null) {
-            node.insertBefore(change.node.create(), node.firstChild)
-          } else {
-            tree &&
-              tree.forEach((item, i) => {
-                if (change.node === item) {
-                  node.insertBefore(change.node.create(), node.children[i])
-                }
-              })
-          }
+          node.insertBefore(change.node.create(), node.childNodes[change.index])
           break
       }
     })
 }
 
 let pathchs = diff(test1, test2)
+console.log(pathchs)
 
-setTimeout(() => {
-  console.log('开始更新')
-  patch(root, test1, 0, pathchs)
-  console.log('结束更新')
-})
+// setTimeout(() => {
+//   console.log('开始更新')
+patch(root, test1, 0, pathchs)
+//   console.log('结束更新')
+// })
