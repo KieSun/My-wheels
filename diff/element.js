@@ -22,6 +22,7 @@ class Element {
   render() {
     let root = this.createElement(this.tag, this.props, this.children)
     document.body.appendChild(root)
+    return root
   }
   // 创建节点
   createElement(tag, props, child) {
@@ -53,9 +54,3 @@ class Element {
     return el
   }
 }
-
-let root = new Element('div', { class: 'my-div' }, ['root'])
-
-let root1 = new Element('div', { class: 'my-div' }, ['root1'])
-
-root.render()

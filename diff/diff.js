@@ -11,11 +11,11 @@ function dfs(oldNode, newNode, index, patches) {
   // 4. node is same and has children, list diff children
   // 5. newNode is null, nothing to do
   let curPatches = []
-  if (newNode.tag === oldNode.tag && newNode.key === oldNode.key) {
+  if (!newNode) {
+  } else if (newNode.tag === oldNode.tag && newNode.key === oldNode.key) {
     let props = diffProps(oldNode.props, newNode.props)
     if (props.length) curPatches.push({ type: StateEnums.ChangeProps, props })
     diffChildren(oldNode.children, newNode.children, index, patches)
-  } else if (!newNode) {
   } else {
     curPatches.push({ type: StateEnums.Replace, node: newNode })
   }
@@ -171,12 +171,17 @@ function getKeys(list) {
   return { keys, text, noTextList }
 }
 
-let test6 = new Element('div', { class: 'my-div' }, 'test6')
-let test7 = new Element('div', { class: 'my-div' }, [test6], 'test7')
-let test77 = new Element('div', { class: 'my-div' }, 'test7')
-let test8 = new Element('div', { class: 'my-div' }, 'test8')
+let test6 = new Element('div', { class: 'my-div' }, ['test6'], 'test6')
+let test7 = new Element('div', { class: 'my-div' }, [test6, 'test7'], 'test7')
+let test77 = new Element('div', { class: 'my-div' }, ['test7'], 'test7')
+let test8 = new Element('div', { class: 'my-div' }, ['test8'], 'test8')
 
-let test3 = new Element('div', { class: 'my-div' }, [test6, test7], 'test3')
+let test3 = new Element(
+  'div',
+  { class: 'my-div' },
+  [test6, test7, 'test3'],
+  'test3'
+)
 let test33 = new Element(
   'div',
   { class: 'my-div' },
@@ -196,5 +201,46 @@ let test2 = new Element('div', { class: 'my-div' }, [
   test33
 ])
 
-console.log(diff(test1, test2))
+let root = test1.render()
 // export default diff
+
+function patch(node, index, patchs) {
+  let changes = patchs[index]
+  let childNodes = node && node.childNodes
+  childNodes &&
+    childNodes.forEach(item => {
+      let child = item && item.childNodes
+      if (child) {
+        index = index + 1 + child.length
+        patch(item, index, patchs)
+      } else index++
+    })
+  if (changes && changes.length) changeDom(node, changes)
+}
+
+function changeDom(node, changes) {
+  changes &&
+    changes.forEach(change => {
+      let { type } = change
+      switch (type) {
+        case StateEnums.ChangeText:
+          // node.textContent = change.text
+          let child = node.childNodes
+          if (child) {
+            child.forEach((item, i) => {
+              if (item.nodeType === 3) {
+                child[i].textContent = change.text
+              }
+            })
+          } else node.appendChild(document.createTextNode(change.text))
+          break
+      }
+    })
+}
+
+let pathchs = diff(test1, test2)
+setTimeout(() => {
+  console.log('开始更新')
+  patch(root, 0, pathchs)
+  console.log('结束更新')
+}, 5000)
