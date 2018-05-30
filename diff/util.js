@@ -1,12 +1,10 @@
 let StateEnums = {
   ChangeText: 0,
   ChangeProps: 1,
-  RemoveProps: 2,
-  AddProps: 3,
-  Insert: 4,
-  Move: 5,
-  Remove: 6,
-  Replace: 7
+  Insert: 2,
+  Move: 3,
+  Remove: 4,
+  Replace: 5
 }
 
 function isString(str) {

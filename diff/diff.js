@@ -62,7 +62,6 @@ function diffProps(oldProps, newProps) {
   for (const key in oldProps) {
     if (oldProps.hasOwnProperty(key) && !newProps[key]) {
       change.push({
-        type: StateEnums.RemoveProps,
         prop: key
       })
     }
@@ -72,13 +71,11 @@ function diffProps(oldProps, newProps) {
       const prop = newProps[key]
       if (oldProps[key] && oldProps[key] !== newProps[key]) {
         change.push({
-          type: StateEnums.ChangeProps,
           prop: key,
           value: newProps[key]
         })
       } else if (!oldProps[key]) {
         change.push({
-          type: StateEnums.AddProps,
           prop: key,
           value: newProps[key]
         })
@@ -144,7 +141,7 @@ function listDiff(oldList, newList, index, patches) {
     if (index === -1) {
       changes.push({
         type: StateEnums.Remove,
-        key
+        node: oldNoTextList[oldKeys.indexOf(key)]
       })
     }
   })
@@ -185,40 +182,36 @@ let test3 = new Element(
 let test33 = new Element(
   'div',
   { class: 'my-div' },
-  [test77, 'text', test8],
+  [test77, 'text33', test8],
   'test3'
 )
 
-let test4 = new Element('div', { class: 'my-div' }, 'test4')
-let test5 = new Element('div', { class: 'my-div' }, 'test5')
+let test4 = new Element('div', { class: 'my-div' }, ['test4'], 'test4')
+let test5 = new Element('div', { class: 'my-div' }, ['test5'], 'test5')
 
 let test1 = new Element('div', { class: 'my-div' }, ['test1', test3])
 
-let test2 = new Element('div', { class: 'my-div' }, [
-  'test2',
-  test4,
-  test5,
-  test33
-])
+let test2 = new Element('div', { id: '11' }, ['test2', test4, test5, test33])
 
 let root = test1.render()
 // export default diff
 
-function patch(node, index, patchs) {
+function patch(node, oldTree, index, patchs) {
   let changes = patchs[index]
   let childNodes = node && node.childNodes
+  let oldTreeChild = oldTree && oldTree.children
   childNodes &&
-    childNodes.forEach(item => {
+    childNodes.forEach((item, i) => {
       let child = item && item.childNodes
       if (child) {
         index = index + 1 + child.length
-        patch(item, index, patchs)
+        patch(item, oldTreeChild[i], index, patchs)
       } else index++
     })
-  if (changes && changes.length) changeDom(node, changes)
+  if (changes && changes.length) changeDom(node, oldTreeChild, changes)
 }
 
-function changeDom(node, changes) {
+function changeDom(node, tree, changes) {
   changes &&
     changes.forEach(change => {
       let { type } = change
@@ -234,13 +227,45 @@ function changeDom(node, changes) {
             })
           } else node.appendChild(document.createTextNode(change.text))
           break
+        case StateEnums.ChangeProps:
+          let { props } = change
+          props.forEach(item => {
+            if (item.value) {
+              node.setAttribute(item.prop, item.value)
+            } else {
+              node.removeAttribute(item.prop)
+            }
+          })
+          break
+        case StateEnums.Remove:
+          tree &&
+            tree.forEach((item, i) => {
+              if (change.node === item) {
+                node.children[i].remove()
+              }
+            })
+          break
+        case StateEnums.Insert:
+          console.log(tree)
+          if (change.after == null) {
+            node.insertBefore(change.node.create(), node.firstChild)
+          } else {
+            tree &&
+              tree.forEach((item, i) => {
+                if (change.node === item) {
+                  node.insertBefore(change.node.create(), node.children[i])
+                }
+              })
+          }
+          break
       }
     })
 }
 
 let pathchs = diff(test1, test2)
+
 setTimeout(() => {
   console.log('开始更新')
-  patch(root, 0, pathchs)
+  patch(root, test1, 0, pathchs)
   console.log('结束更新')
-}, 5000)
+})

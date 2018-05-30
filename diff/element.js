@@ -20,12 +20,20 @@ class Element {
   }
   // 渲染
   render() {
-    let root = this.createElement(this.tag, this.props, this.children)
+    let root = this._createElement(
+      this.tag,
+      this.props,
+      this.children,
+      this.key
+    )
     document.body.appendChild(root)
     return root
   }
+  create() {
+    return this._createElement(this.tag, this.props, this.children, this.key)
+  }
   // 创建节点
-  createElement(tag, props, child) {
+  _createElement(tag, props, child, key) {
     // 通过 tag 创建节点
     let el = document.createElement(tag)
     // 设置节点属性
@@ -35,15 +43,19 @@ class Element {
         el.setAttribute(key, value)
       }
     }
+    if (key) {
+      el.setAttribute('key', key)
+    }
     // 递归添加子节点
     if (child) {
       child.forEach(element => {
         let child
         if (element instanceof Element) {
-          child = this.createElement(
+          child = this._createElement(
             element.tag,
             element.props,
-            element.children
+            element.children,
+            element.key
           )
         } else {
           child = document.createTextNode(element)
