@@ -5,6 +5,7 @@ let index = 0
 export default function patch(node, patchs) {
   let changes = patchs[index]
   let childNodes = node && node.childNodes
+  // 这里的深度遍历和 diff 中是一样的
   let last = null
   if (childNodes && childNodes.length) {
     childNodes.forEach((item, i) => {

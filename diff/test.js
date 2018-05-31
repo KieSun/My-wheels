@@ -21,12 +21,12 @@ let test33 = new Element(
   'test3'
 )
 
-let test4 = new Element('div', { class: 'my-div' }, ['test4'], 'test4')
+let test4 = new Element('div', { class: 'my-div' }, ['test4'])
 let test5 = new Element('div', { class: 'my-div' }, ['test5'], 'test5')
 
-let test1 = new Element('div', { class: 'my-div' }, ['test1'])
+let test1 = new Element('div', { class: 'my-div' }, [test4])
 
-let test2 = new Element('ul', { id: '11' }, ['test2'])
+let test2 = new Element('ul', { id: '11' }, [test5, test4])
 
 let root = test1.render()
 // export default diff

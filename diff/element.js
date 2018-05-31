@@ -1,5 +1,3 @@
-// import diff from './diff'
-
 export default class Element {
   /**
    * @param {String} tag 'div'
