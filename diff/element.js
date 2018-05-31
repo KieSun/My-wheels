@@ -1,6 +1,6 @@
 // import diff from './diff'
 
-class Element {
+export default class Element {
   /**
    * @param {String} tag 'div'
    * @param {Object} props { class: 'item' }

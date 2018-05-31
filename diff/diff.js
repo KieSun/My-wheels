@@ -1,4 +1,7 @@
-function diff(oldDomTree, newDomTree) {
+import { StateEnums, isString, move } from './util'
+import Element from './element'
+
+export default function diff(oldDomTree, newDomTree) {
   let pathchs = {}
   dfs(oldDomTree, newDomTree, 0, pathchs)
   return pathchs
@@ -164,120 +167,4 @@ function getKeys(list) {
       keys.push(key)
     })
   return keys
-}
-
-let test6 = new Element('div', { class: 'my-div' }, ['test6'], 'test6')
-
-let test7 = new Element('div', { class: 'my-div' }, [test6, 'test7'], 'test7')
-let test77 = new Element('div', { class: 'my-div' }, ['test77'], 'test7')
-
-let test8 = new Element('div', { class: 'my-div' }, ['test8'], 'test8')
-
-let test3 = new Element(
-  'div',
-  { class: 'my-div' },
-  [test6, test7, 'test3'],
-  'test3'
-)
-let test33 = new Element(
-  'div',
-  { class: 'my-div' },
-  [test77, 'text33', test8],
-  'test3'
-)
-
-let test4 = new Element('div', { class: 'my-div' }, ['test4'], 'test4')
-let test5 = new Element('div', { class: 'my-div' }, ['test5'], 'test5')
-
-let test1 = new Element('div', { class: 'my-div' }, ['test1'])
-
-let test2 = new Element('ul', { id: '11' }, ['test2'])
-
-let root = test1.render()
-// export default diff
-
-let index = 0
-function patch(node, patchs) {
-  let changes = patchs[index]
-  let childNodes = node && node.childNodes
-  let last = null
-  if (childNodes && childNodes.length) {
-    childNodes.forEach((item, i) => {
-      index =
-        last && last.children ? index + last.children.length + 1 : index + 1
-      patch(item, patchs)
-      last = item
-    })
-  }
-  if (changes && changes.length) changeDom(node, changes)
-}
-
-function changeDom(node, changes, noChild) {
-  changes &&
-    changes.forEach(change => {
-      let { type } = change
-      switch (type) {
-        case StateEnums.ChangeProps:
-          let { props } = change
-          props.forEach(item => {
-            if (item.value) {
-              node.setAttribute(item.prop, item.value)
-            } else {
-              node.removeAttribute(item.prop)
-            }
-          })
-          break
-        case StateEnums.Remove:
-          node.childNodes[change.index].remove()
-          break
-        case StateEnums.Insert:
-          let dom
-          if (isString(change.node)) {
-            dom = document.createTextNode(change.node)
-          } else if (change.node instanceof Element) {
-            dom = change.node.create()
-          }
-          node.insertBefore(dom, node.childNodes[change.index])
-          break
-        case StateEnums.Replace:
-          node.parentNode.replaceChild(change.node.create(), node)
-          break
-        case StateEnums.Move:
-          let fromNode = node.childNodes[change.from]
-          let toNode = node.childNodes[change.to]
-          let cloneFromNode = fromNode.cloneNode(true)
-          let cloenToNode = toNode.cloneNode(true)
-          node.replaceChild(cloneFromNode, toNode)
-          node.replaceChild(cloenToNode, fromNode)
-          break
-        default:
-          break
-      }
-    })
-}
-
-let pathchs = diff(test1, test2)
-console.log(pathchs)
-
-setTimeout(() => {
-  console.log('开始更新')
-  patch(root, pathchs)
-  console.log('结束更新')
-}, 1000)
-
-function move(arr, old_index, new_index) {
-  while (old_index < 0) {
-    old_index += arr.length
-  }
-  while (new_index < 0) {
-    new_index += arr.length
-  }
-  if (new_index >= arr.length) {
-    let k = new_index - arr.length
-    while (k-- + 1) {
-      arr.push(undefined)
-    }
-  }
-  arr.splice(new_index, 0, arr.splice(old_index, 1)[0])
-  return arr
 }
