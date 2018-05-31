@@ -1,19 +1,10 @@
 {
   "name": "diff",
   "version": "1.0.0",
-  "description": "",
-  "main": "diff.js",
-  "scripts": {
-    "babel": "npx babel test.js --watch --out-file compiled.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-plugin-transform-es2015-modules-amd": "^6.24.1",
-    "babel-preset-env": "^1.7.0"
-  },
+  "main": "index.js",
+  "license": "MIT",
   "dependencies": {
-    "babel-core": "^6.26.3"
+    "babel-preset-env": "^1.7.0",
+    "parcel": "^1.8.1"
   }
 }
