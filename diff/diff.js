@@ -2,7 +2,9 @@ import { StateEnums, isString, move } from './util'
 import Element from './element'
 
 export default function diff(oldDomTree, newDomTree) {
+  // 用于记录差异
   let pathchs = {}
+  // 一开始的索引为 0
   dfs(oldDomTree, newDomTree, 0, pathchs)
   return pathchs
 }
@@ -12,7 +14,7 @@ function dfs(oldNode, newNode, index, patches) {
   let curPatches = []
   // 需要判断三种情况
   // 1.没有新的节点，那么什么都不用做
-  // 2.新的节点的 tagName 和旧的不同，就替换
+  // 2.新的节点的 tagName 和 `key` 和旧的不同，就替换
   // 3.新的节点的 tagName 和 key（可能都没有） 和旧的相同，开始遍历子树
   if (!newNode) {
   } else if (newNode.tag === oldNode.tag && newNode.key === oldNode.key) {
