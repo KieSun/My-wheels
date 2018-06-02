@@ -110,7 +110,7 @@ function listDiff(oldList, newList, index, patches) {
   // 再去判断一遍
   let list = []
   oldList &&
-    oldList.forEach(item => {
+    oldList.forEach((item, i) => {
       let key = item.key
       if (isString(item)) {
         key = item

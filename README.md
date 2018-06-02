@@ -2,6 +2,6 @@
 
 ### Todo
 - [x] Eevnt Bus
-- [ ] VDom
+- [x] VDom
 - [ ] MVVM
 

@@ -2,3 +2,9 @@
 diff/\.cache/
 
 diff/dist/
+
+Virtual Dom/\.cache/
+
+Virtual Dom/dist/
+
+diff/\.idea/
