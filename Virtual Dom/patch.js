@@ -6,6 +6,10 @@ export default function patch(node, patchs) {
   let changes = patchs[index]
   let childNodes = node && node.childNodes
   // 这里的深度遍历和 diff 中是一样的
+  if (!childNodes) index += 1
+  if (changes && changes.length && patchs[index]) {
+    changeDom(node, changes)
+  }
   let last = null
   if (childNodes && childNodes.length) {
     childNodes.forEach((item, i) => {
@@ -15,7 +19,6 @@ export default function patch(node, patchs) {
       last = item
     })
   }
-  if (changes && changes.length) changeDom(node, changes)
 }
 
 function changeDom(node, changes, noChild) {

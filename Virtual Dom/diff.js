@@ -107,9 +107,12 @@ function listDiff(oldList, newList, index, patches) {
   // 使用该数组保存有以下好处
   // 1.可以正确获得被删除节点索引
   // 2.交换节点位置只需要操作一遍 DOM
+  // 3.用于 `diffChildren` 函数中的判断，只需要遍历
+  // 两个树中都存在的节点，而对于新增或者删除的节点来说，完全没必要
+  // 再去判断一遍
   let list = []
   oldList &&
-    oldList.forEach(item => {
+    oldList.forEach((item, i) => {
       let key = item.key
       if (isString(item)) {
         key = item
@@ -136,6 +139,7 @@ function listDiff(oldList, newList, index, patches) {
     }
   }
   // 遍历新的 list，判断是否有节点新增或移动
+  // 同时也对 `list` 做节点新增和移动节点的操作
   newList &&
     newList.forEach((item, i) => {
       let key = item.key
@@ -145,7 +149,7 @@ function listDiff(oldList, newList, index, patches) {
       // 寻找旧的 children 中是否含有当前节点
       let index = list.indexOf(key)
       // 没找到代表新节点，需要插入
-      if (index === -1) {
+      if (index === -1 || key == null) {
         changes.push({
           type: StateEnums.Insert,
           node: item,
@@ -154,6 +158,7 @@ function listDiff(oldList, newList, index, patches) {
         list.splice(i, 0, key)
       } else {
         // 找到了，需要判断是否需要移动
+        console.log(key)
         if (index !== i) {
           changes.push({
             type: StateEnums.Move,
