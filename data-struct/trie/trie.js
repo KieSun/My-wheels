@@ -10,13 +10,17 @@ class TrieNode {
 }
 class Trie {
   constructor() {
+    // 根节点，代表空字符
     this.root = new TrieNode()
   }
+  // 插入字符串
   insert(str) {
     if (!str) return
     let node = this.root
     for (let i = 0; i < str.length; i++) {
+      // 获得字符先对应的索引
       let index = str[i].charCodeAt() - 'a'.charCodeAt()
+      // 如果索引对应没有值，就创建
       if (!node.next[index]) {
         node.next[index] = new TrieNode()
       }
@@ -25,11 +29,13 @@ class Trie {
     }
     node.end += 1
   }
+  // 搜索字符串出现的次数
   search(str) {
     if (!str) return
     let node = this.root
     for (let i = 0; i < str.length; i++) {
       let index = str[i].charCodeAt() - 'a'.charCodeAt()
+      // 如果索引对应没有值，代表没有需要搜素的字符串
       if (!node.next[index]) {
         return 0
       }
@@ -37,11 +43,14 @@ class Trie {
     }
     return node.end
   }
+  // 删除字符串
   delete(str) {
     if (!this.search(str)) return
     let node = this.root
     for (let i = 0; i < str.length; i++) {
       let index = str[i].charCodeAt() - 'a'.charCodeAt()
+      // 如果索引对应的节点的 Path 为 0，代表经过该节点的字符串
+      // 已经一个，直接删除即可
       if (--node.next[index].path == 0) {
         node.next[index] = null
         return
