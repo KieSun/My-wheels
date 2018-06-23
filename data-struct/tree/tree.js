@@ -34,6 +34,8 @@ class BST {
     } else if (node.value < v) {
       node.size++
       node.right = this._addChild(node.right, v)
+    } else {
+      node.value = v
     }
     return node
   }
